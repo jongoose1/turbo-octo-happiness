@@ -27,7 +27,7 @@ neuron.o: neuron.c
 
 .PHONY: clean
 clean:
-	rm -f *.0
+	rm -f *.o
 	rm -f $(OUTS)
 
 .PHONY: install
