@@ -42,6 +42,7 @@ cln * add_connection(neuron * from, neuron * to,double weight){
 	to->connections_head = new_conn;
 }
 
+/*remove*/
 int main(void){
 	return 0;
 }
