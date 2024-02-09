@@ -8,6 +8,7 @@
 /* 
 
 real -> real min finder
+gradient descent
 with unreliable feedback
 f(x) = (x^2 - x + 1) + gauss()
 
