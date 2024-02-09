@@ -2,5 +2,4 @@
 *.o
 inator
 opco
-neuron
-network
+network_test

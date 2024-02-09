@@ -1,5 +1,5 @@
 CC := gcc
-OUTS := opco inator
+OUTS := opco inator network_test
 CFLAGS := -O3 -flto -ansi -Wall
 LDFLAGS := -O3 -Wall -flto
 BINDIR := ~/bin
@@ -24,6 +24,12 @@ neuron.o: neuron.c
 
 network.o: network.c
 	$(CC) -c -o network.o network.c $(CFLAGS)
+
+network_test: network_test.o network.o
+	$(CC) -o network_test network_test.o network.o -lm $(LDFLAGS)
+network_test.o: network_test.c
+	$(CC) -c -o network_test.o network_test.c $(CFLAGS)
+
 
 .PHONY: clean
 clean:

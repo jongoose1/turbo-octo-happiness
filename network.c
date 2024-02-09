@@ -61,6 +61,7 @@ int print_input(network * net){
 	for(i = 0; i < net->input_size; i++){
 		printf("%lf\n", net->inputs[i]);
 	}
+	printf("\n");
 	return 0;
 }
 
@@ -69,6 +70,7 @@ int print_output(network * net){
 	for(i = 0; i < net->output_size; i++){
 		printf("%lf\n", net->activations[i]);
 	}
+	printf("\n");
 	return 0;
 }
 
