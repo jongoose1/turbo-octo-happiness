@@ -1,4 +1,6 @@
 #include <math.h>
+#include <stdlib.h>
+
 
 typedef struct neuron neuron;
 typedef struct connection_list_node connection_list_node;
@@ -19,16 +21,15 @@ double evaluate(neuron * n){
 	/* tanh(sum(w*x) + b) */
 
 	double a;
-	int i;
 	cln * curr = n->connections_head;
 	a = n->bias;
 	while(curr){
-		a = a + curr->weight * curr->from->activation
+		a = a + curr->weight * curr->from->activation;
 		curr = curr->next;
 	}
 
 	a = tanh(a);
-	*(n->activation) = a;
+	n->activation = a;
 	return a;
 }
 
@@ -40,4 +41,5 @@ cln * add_connection(neuron * from, neuron * to,double weight){
 	new_conn->from = from;
 	new_conn->next = to->connections_head;
 	to->connections_head = new_conn;
+	return new_conn;
 }

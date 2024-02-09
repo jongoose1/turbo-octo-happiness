@@ -1,17 +1,21 @@
 /*network.c*/
 
-#include "network.h"
 #include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "network.h"
 
 network * new_network(size_t input_size, size_t output_size, size_t hidden_size){
-	size_t oph;
 	network * net = malloc(sizeof(network));
 	if(!net) return NULL;
-	oph = output_size+hidden_size;
-	net->biases = calloc(oph, sizeof(double));
-	net->weights = calloc(oph*oph,sizeof(double));
-	net->input_weights = calloc(input_size * oph,sizeof(double));
-	net->activations = calloc(oph, sizeof(double));
+	net->input_size = input_size;
+	net->output_size = output_size;
+	net->hidden_size = hidden_size;
+	net->oph = output_size+hidden_size;
+	net->biases = calloc(net->oph, sizeof(double));
+	net->weights = calloc(net->oph*net->oph,sizeof(double));
+	net->input_weights = calloc(input_size * net->oph,sizeof(double));
+	net->activations = calloc(net->oph, sizeof(double));
 	net->inputs = calloc(input_size, sizeof(double));
 	if(!net->input_weights || !net->weights || !net-> biases || !net->activations || !net->inputs){
 		free(net->input_weights);
@@ -27,29 +31,44 @@ network * new_network(size_t input_size, size_t output_size, size_t hidden_size)
 
 int clear_input(network * net){
 	size_t i;
-	for(i = 0; i<net->input_size; i++) inputs[i] = 0.0;
+	for(i = 0; i<net->input_size; i++) net->inputs[i] = 0.0;
 	return 0;
 }
 
 int tick(network * net){
-	size_t i, oph, j;
-	oph = net->output_size + net->hidden_size;
-	double * scratch = malloc(opt * sizeof(double));
+	size_t i, j;
+	double * scratch = malloc(net->oph * sizeof(double));
 	if(!scratch) return 1;
-	for(i = 0; i < oph; i++) {
+	for(i = 0; i < net->oph; i++) {
 		scratch[i] = net->biases[i];
 		for(j = 0; j < net->input_size; j++){
-			scratch[i] = scratch[i] + net->inputs[i][j] * net->input_weights[i][j];
+			scratch[i] = scratch[i] + net->inputs[j] * net->input_weights[i*net->input_size + j];
 		}
-		for(j = 0; j < oph; j++){
-			scratch[i] = scratch[i] + net->activations[i]*net->weights[i][j];
+		for(j = 0; j < net->oph; j++){
+			scratch[i] = scratch[i] + net->activations[i]*net->weights[i*net->oph + j];
 		}
 		scratch[i] = tanh(scratch[i]);
 	}
-	for(i = 0; i < oph; i++){
-		activations[i] = scratch[i];
+	for(i = 0; i < net->oph; i++){
+		net->activations[i] = scratch[i];
 	}
 	free(scratch);
+	return 0;
+}
+
+int print_input(network * net){
+	size_t i;
+	for(i = 0; i < net->input_size; i++){
+		printf("%lf\n", net->inputs[i]);
+	}
+	return 0;
+}
+
+int print_output(network * net){
+	size_t i;
+	for(i = 0; i < net->output_size; i++){
+		printf("%lf\n", net->activations[i]);
+	}
 	return 0;
 }
 
