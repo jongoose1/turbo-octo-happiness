@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/* real -> real min finder */
+/*
+real -> real min finder
+using gradient descent
+*/
 
 #define DELTA 0.1
 #define RATE 0.1
