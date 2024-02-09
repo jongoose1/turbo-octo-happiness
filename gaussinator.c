@@ -38,8 +38,8 @@ there is always a chance that the estimated slope will be huge
 #define M_PI 3.1415926535897932384626433
 #endif
 
-#define DELTA 0.0001
-#define RATE 0.0001
+#define DELTA 0.1
+#define RATE 0.1
 
 double gauss(void){
 	double x,y;
