@@ -41,8 +41,3 @@ cln * add_connection(neuron * from, neuron * to,double weight){
 	new_conn->next = to->connections_head;
 	to->connections_head = new_conn;
 }
-
-/*remove*/
-int main(void){
-	return 0;
-}
