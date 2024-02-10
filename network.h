@@ -10,7 +10,7 @@ typedef struct network {
 	size_t oph;
 	double * biases;        /* 1D, oph */
 	double * weights;       /* 2D, oph*oph */
-	double * input_weights; /* 2D, input_size*oph */
+	double * input_weights; /* 2D, oph*input_size */
 	double * activations;   /* 1D, oph */
 	double * inputs;        /* 1D, input_size */
 } network;

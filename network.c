@@ -42,10 +42,12 @@ int tick(network * net){
 	for(i = 0; i < net->oph; i++) {
 		scratch[i] = net->biases[i];
 		for(j = 0; j < net->input_size; j++){
-			scratch[i] = scratch[i] + net->inputs[j] * net->input_weights[i*net->input_size + j];
+			scratch[i] = scratch[i] +
+			net->inputs[j] * net->input_weights[i*net->input_size + j];
 		}
 		for(j = 0; j < net->oph; j++){
-			scratch[i] = scratch[i] + net->activations[i]*net->weights[i*net->oph + j];
+			scratch[i] = scratch[i] +
+			net->activations[i]*net->weights[i*net->oph + j];
 		}
 		scratch[i] = tanh(scratch[i]);
 	}
@@ -55,6 +57,7 @@ int tick(network * net){
 	free(scratch);
 	return 0;
 }
+
 
 int print_input(network * net){
 	size_t i;
