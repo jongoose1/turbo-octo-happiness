@@ -21,6 +21,8 @@ int clear_input(network * net);
 
 int tick(network * net);
 
+int scratch_tick(network * net, double * scratch);
+
 int print_input(network * net);
 
 int print_output(network * net);

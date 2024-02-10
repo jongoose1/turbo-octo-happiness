@@ -36,8 +36,14 @@ int clear_input(network * net){
 }
 
 int tick(network * net){
-	size_t i, j;
 	double * scratch = malloc(net->oph * sizeof(double));
+	scratch_tick(net, scratch);
+	free(scratch);
+	return 0;
+}
+
+int scratch_tick(network * net, double * scratch){
+	size_t i, j;
 	if(!scratch) return 1;
 	for(i = 0; i < net->oph; i++) {
 		scratch[i] = net->biases[i];
@@ -54,10 +60,8 @@ int tick(network * net){
 	for(i = 0; i < net->oph; i++){
 		net->activations[i] = scratch[i];
 	}
-	free(scratch);
 	return 0;
 }
-
 
 int print_input(network * net){
 	size_t i;
