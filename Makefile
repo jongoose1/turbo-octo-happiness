@@ -12,19 +12,15 @@ RM := rm -f
 .PHONY: all
 all: $(addsuffix .x, $(OUTS))
 
-opco.x: opco.o
-inator.x: inator.o
-network_test.x: network_test.o network.o
-expansion_test.x: expansion_test.o network.o
-gaussinator.x: gaussinator.o
+network_test.x: network.o
+expansion_test.x: network.o
 
-$(addsuffix .x, $(OUTS)):
+$(addsuffix .x, $(OUTS)): %.x: %.o
+
+%.x: %.o
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(addsuffix .o, $(DEPS)): %.o: %.h
-
-%.o: %.c 
-	$(CC) -c $(CFLAGS) $< -o $@
 
 $(OUTS): %: %.x
 	cp $^ $@
