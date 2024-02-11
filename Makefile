@@ -1,53 +1,44 @@
-CC := gcc
 OUTS := opco inator network_test gaussinator expansion_test
+DEPS := neuron.h network.h
+CC := gcc
 CFLAGS := -O3 -flto -ansi -Wall
-LDFLAGS := -O3 -Wall -flto -lm
+LDFLAGS := -O3 -Wall -flto
+LDLIBS := -lm
 #CFLAGS := -ansi -Wall -fsanitize=undefined -g
-#LDFLAGS := -Wall -lm -fsanitize=undefined
+#LDFLAGS := -Wall -fsanitize=undefined
 BINDIR := ~/bin
+RM := rm -f
 
 .PHONY: all
-all: $(OUTS)
+all: $(addsuffix .x, $(OUTS))
 
-opco: opco.o
-	$(CC) -o opco opco.o $(LDFLAGS)
-opco.o: opco.c
-	$(CC) -c -o opco.o opco.c $(CFLAGS)
+opco.x: opco.o
+inator.x: inator.o
+network_test.x: network_test.o network.o
+expansion_test.x: expansion_test.o network.o
+gaussinator.x: gaussinator.o
 
-inator: inator.o
-	$(CC) -o inator inator.o $(LDFLAGS)
-inator.o: inator.c
-	$(CC) -c -o inator.o inator.c $(CFLAGS)
+$(addsuffix .x, $(OUTS)):
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-network_test: network_test.o network.o
-	$(CC) -o network_test network_test.o network.o $(LDFLAGS)
-network_test.o: network_test.c
-	$(CC) -c -o network_test.o network_test.c $(CFLAGS)
-expansion_test: expansion_test.o network.o
-	$(CC) -o expansion_test expansion_test.o network.o $(LDFLAGS)
-expansion_test.o: expansion_test.c
-	$(CC) -c -o expansion_test.o expansion_test.c $(CFLAGS)
+%.o: %.c $(DEPS)
+	$(CC) -c $(CFLAGS) $< -o $@
 
-gaussinator: gaussinator.o
-	$(CC) -o gaussinator gaussinator.o $(LDFLAGS)
-gaussinator.o: gaussinator.c
-	$(CC) -c -o gaussinator.o gaussinator.c $(CFLAGS)
-
-neuron.o: neuron.c
-	$(CC) -c -o neuron.o neuron.c $(CFLAGS)
-network.o: network.c
-	$(CC) -c -o network.o network.c $(CFLAGS)
+$(OUTS): %: %.x
+	cp $^ $@
 
 .PHONY: clean
 clean:
-	rm -f *.o
-	rm -f $(OUTS)
+	$(RM) *.o
+	$(RM) $(addsuffix .x, $(OUTS))
+	$(RM) $(OUTS)
 
 .PHONY: install
-install: all
+install: $(OUTS)
 	mkdir -p $(BINDIR)
 	install $(OUTS) $(BINDIR)
+	$(RM) $(OUTS)
 
 .PHONY: uninstall
 uninstall:
-	rm -f $(addprefix $(BINDIR)/, $(OUTS))
+	$(RM) $(addprefix $(BINDIR)/, $(OUTS))

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 typedef struct network {
+	int lol;
 	size_t input_size;
 	size_t output_size;
 	size_t hidden_size;

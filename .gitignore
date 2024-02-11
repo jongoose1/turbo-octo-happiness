@@ -1,8 +1,4 @@
 *.out
 *.o
+*.x
 *.s
-inator
-opco
-network_test
-expansion_test
-gaussinator
