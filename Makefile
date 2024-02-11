@@ -1,5 +1,5 @@
 OUTS := opco inator network_test gaussinator expansion_test
-DEPS := neuron.h network.h
+DEPS := network neuron
 CC := gcc
 CFLAGS := -O3 -flto -ansi -Wall
 LDFLAGS := -O3 -Wall -flto
@@ -21,7 +21,9 @@ gaussinator.x: gaussinator.o
 $(addsuffix .x, $(OUTS)):
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-%.o: %.c $(DEPS)
+$(addsuffix .o, $(DEPS)): %.o: %.h
+
+%.o: %.c 
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(OUTS): %: %.x
