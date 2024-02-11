@@ -81,6 +81,14 @@ int print_output(network * net){
 	printf("\n");
 	return 0;
 }
+int print_biases(network * net){
+	size_t i;
+	for(i = 0; i < net->oph; i++){
+		printf("%lf\n", net->biases[i]);
+	}
+	printf("\n");
+	return 0;
+}
 
 int print_activations(network * net){
 	size_t i;
@@ -103,6 +111,19 @@ int print_weights(network * net){
 	return 0;
 }
 
+int print_input_weights(network * net){
+	size_t i, j;
+	for(i = 0; i < net->oph; i++){
+		for(j = 0; j < net->input_size; j++){
+			printf("%lf ", net->input_weights[i*net->input_size + j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	return 0;
+
+}
+
 int expand_hidden(network * net, size_t h){
 	/* adds h hidden neurons */
 	if(h == 0) return 0;
@@ -115,13 +136,16 @@ int expand_hidden(network * net, size_t h){
 	tmp.hidden_size = net->hidden_size + h;
 	tmp.oph = net->oph + h;
 	tmp.biases = realloc(net->biases,tmp.oph * sizeof(double));
-	if (!tmp.biases) return 1;
 	tmp.weights = calloc(tmp.oph * tmp.oph, sizeof(double));
-	if (!tmp.weights) return 1;
 	tmp.input_weights = realloc(net->input_weights, tmp.oph*tmp.input_size * sizeof(double));
-	if (!tmp.input_weights) return 1;
 	tmp.activations = realloc(net->activations,tmp.oph * sizeof(double));
-	if (!tmp.activations) return 1;
+	if (!tmp.activations || !tmp.input_weights || !tmp.weights || !tmp.biases){
+		free(tmp.activations);
+		free(tmp.biases);
+		free(tmp.input_weights);
+		free(tmp.weights);
+		return 1;
+	}
 	tmp.inputs = net->inputs;
 
 	for (i = net->oph; i <tmp.oph;i++){
@@ -142,4 +166,90 @@ int expand_hidden(network * net, size_t h){
 	return 0;
 }
 
-
+int expand_input(network * net, size_t n){
+	if(n==0) return 0;
+	network tmp;
+	size_t i, j;
+	tmp.input_size = net->input_size + n;
+	tmp.output_size = net->output_size;
+	tmp.hidden_size = net->hidden_size;
+	tmp.oph = net->oph;
+	tmp.biases = net->biases;
+	tmp.weights = net->weights;
+	tmp.activations = net->activations;
+	tmp.input_weights = calloc(tmp.oph*tmp.input_size, sizeof(double));
+	tmp.inputs = realloc(net->inputs, tmp.input_size * sizeof(double));
+	if(!tmp.input_weights || !tmp.inputs) {
+		free(tmp.inputs);
+		free(tmp.input_weights);
+		return 1;
+	}
+	for(i = net->input_size; i < tmp.input_size;i++){
+		tmp.inputs[i] = 0.0;
+	}
+	for(i = 0; i < net->oph; i++){
+		for(j = 0; j < net->input_size; j++){
+			tmp.input_weights[i*tmp.input_size + j] = net->input_weights[i*net->input_size + j];
+		}
+	}
+	free(net->input_weights);
+	*net = tmp;
+	return 0;
+}
+int expand_output(network * net, size_t n){
+	if(n==0) return 0;
+	network tmp;
+	size_t i, j;
+	tmp.input_size = net->input_size;
+	tmp.output_size = net->output_size + n;
+	tmp.hidden_size = net->hidden_size;
+	tmp.oph = net->oph + n;
+	tmp.biases = calloc(tmp.oph, sizeof(double));
+	tmp.weights = calloc(tmp.oph * tmp.oph, sizeof(double));
+	tmp.activations = calloc(tmp.oph, sizeof(double));
+	tmp.input_weights = calloc(tmp.oph*tmp.input_size, sizeof(double));
+	tmp.inputs = net->inputs;
+	if(!tmp.biases || !tmp.weights || !tmp.activations || !tmp.input_weights){
+		free(tmp.biases);
+		free(tmp.weights);
+		free(tmp.activations);
+		free(tmp.input_weights);
+		return 1;
+	}
+	for(i = 0; i < net->output_size;  i++){
+		tmp.biases[i] = net->biases[i];
+		tmp.activations[i] = net->activations[i];
+		for(j = 0; j < tmp.input_size; j++){
+			tmp.input_weights[i*tmp.input_size + j] = net->input_weights[i*net->input_size + j];
+		}
+	}
+	for(i = tmp.output_size; i < tmp.oph; i++){
+		tmp.biases[i] = net->biases[i - n];
+		tmp.activations[i] = net->activations[i - n];
+		for(j = 0; j < tmp.input_size; j++){
+			tmp.input_weights[i*tmp.input_size + j] = net->input_weights[(i - n)*net->input_size + j];
+		}
+	}
+	for(i = 0; i < net->output_size; i++){
+		for(j = 0; j < net->output_size; j++){
+			tmp.weights[i*tmp.oph + j] = net->weights[i*net->oph + j];
+		}
+		for(j = tmp.output_size; j < tmp.oph; j++){
+			tmp.weights[i*tmp.oph + j]= net->weights[i*net->oph + j - n];
+		}
+	}
+	for(i = tmp.output_size; i < tmp.oph; i++){
+		for(j = 0; j < net->output_size; j++){
+			tmp.weights[i*tmp.oph + j] = net->weights[(i-n)*net->oph + j];
+		}
+		for(j = tmp.output_size; j < tmp.oph; j++){
+			tmp.weights[i*tmp.oph + j]= net->weights[(i-n)*net->oph + j - n];
+		}
+	}
+	free(net->biases);
+	free(net->weights);
+	free(net->activations);
+	free(net->input_weights);
+	*net = tmp;
+	return 0;
+}

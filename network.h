@@ -31,6 +31,14 @@ int print_activations(network * net);
 
 int print_weights(network * net);
 
+int print_input_weights(network * net);
+
+int print_biases(network * net);
+
 int expand_hidden(network * net, size_t h);
+
+int expand_input(network * net, size_t n);
+
+int expand_output(network * net, size_t n);
 
 #endif

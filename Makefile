@@ -1,9 +1,9 @@
 CC := gcc
-OUTS := opco inator network_test gaussinator
+OUTS := opco inator network_test gaussinator expansion_test
 CFLAGS := -O3 -flto -ansi -Wall
 LDFLAGS := -O3 -Wall -flto -lm
-#CFLAGS := -O3 -flto -ansi -Wall -fsanitize=undefined -g
-#LDFLAGS := -O3 -Wall -flto -lm -fsanitize=undefined
+#CFLAGS := -ansi -Wall -fsanitize=undefined -g
+#LDFLAGS := -Wall -lm -fsanitize=undefined
 BINDIR := ~/bin
 
 .PHONY: all
@@ -23,6 +23,10 @@ network_test: network_test.o network.o
 	$(CC) -o network_test network_test.o network.o $(LDFLAGS)
 network_test.o: network_test.c
 	$(CC) -c -o network_test.o network_test.c $(CFLAGS)
+expansion_test: expansion_test.o network.o
+	$(CC) -o expansion_test expansion_test.o network.o $(LDFLAGS)
+expansion_test.o: expansion_test.c
+	$(CC) -c -o expansion_test.o expansion_test.c $(CFLAGS)
 
 gaussinator: gaussinator.o
 	$(CC) -o gaussinator gaussinator.o $(LDFLAGS)

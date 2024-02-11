@@ -1,5 +1,4 @@
 #include "network.h"
-#include <stdio.h>
 
 int main(void){
 	size_t i;
