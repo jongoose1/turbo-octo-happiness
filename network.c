@@ -141,10 +141,5 @@ int expand_hidden(network * net, size_t h){
 	*net = tmp;
 	return 0;
 }
-/*
-double * network_output(network * net, size_t returnSize){
-	*returnSize = output_size;
-	return net->activations;
-}
-*/
+
 
