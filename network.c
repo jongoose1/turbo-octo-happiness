@@ -43,8 +43,8 @@ int tick(network * net){
 }
 
 int scratch_tick(network * net, double * scratch){
-	size_t i, j;
 	if(!scratch) return 1;
+	size_t i, j;
 	for(i = 0; i < net->oph; i++) {
 		scratch[i] = net->biases[i];
 		for(j = 0; j < net->input_size; j++){
