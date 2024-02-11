@@ -2,6 +2,8 @@ CC := gcc
 OUTS := opco inator network_test gaussinator
 CFLAGS := -O3 -flto -ansi -Wall
 LDFLAGS := -O3 -Wall -flto -lm
+#CFLAGS := -O3 -flto -ansi -Wall -fsanitize=undefined -g
+#LDFLAGS := -O3 -Wall -flto -lm -fsanitize=undefined
 BINDIR := ~/bin
 
 .PHONY: all

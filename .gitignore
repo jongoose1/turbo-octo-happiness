@@ -1,5 +1,6 @@
 *.out
 *.o
+*.s
 inator
 opco
 network_test

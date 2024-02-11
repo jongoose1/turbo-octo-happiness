@@ -36,10 +36,11 @@ int clear_input(network * net){
 }
 
 int tick(network * net){
+	int r;
 	double * scratch = malloc(net->oph * sizeof(double));
-	scratch_tick(net, scratch);
+	r = scratch_tick(net, scratch);
 	free(scratch);
-	return 0;
+	return r;
 }
 
 int scratch_tick(network * net, double * scratch){
@@ -81,6 +82,65 @@ int print_output(network * net){
 	return 0;
 }
 
+int print_activations(network * net){
+	size_t i;
+	for(i = 0; i < net->oph; i++){
+		printf("%lf\n", net->activations[i]);
+	}
+	printf("\n");
+	return 0;
+}
+
+int print_weights(network * net){
+	size_t i, j;
+	for(i = 0; i < net->oph; i++){
+		for(j = 0; j < net->oph; j++){
+			printf("%lf ", net->weights[i*net->oph + j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	return 0;
+}
+
+int expand_hidden(network * net, size_t h){
+	/* adds h hidden neurons */
+	if(h == 0) return 0;
+	
+	network tmp;
+	size_t i, j;
+
+	tmp.input_size = net->input_size;
+	tmp.output_size = net->output_size;
+	tmp.hidden_size = net->hidden_size + h;
+	tmp.oph = net->oph + h;
+	tmp.biases = realloc(net->biases,tmp.oph * sizeof(double));
+	if (!tmp.biases) return 1;
+	tmp.weights = calloc(tmp.oph * tmp.oph, sizeof(double));
+	if (!tmp.weights) return 1;
+	tmp.input_weights = realloc(net->input_weights, tmp.oph*tmp.input_size * sizeof(double));
+	if (!tmp.input_weights) return 1;
+	tmp.activations = realloc(net->activations,tmp.oph * sizeof(double));
+	if (!tmp.activations) return 1;
+	tmp.inputs = net->inputs;
+
+	for (i = net->oph; i <tmp.oph;i++){
+		tmp.biases[i] = 0.0;
+		tmp.activations[i] = 0.0;
+		for(j = 0; j < tmp.input_size;j++){
+			tmp.input_weights[i*tmp.input_size + j] = 0.0;
+		}
+	}
+
+	for(i = 0; i < net->oph; i++){
+		for(j = 0; j < net->oph; j++){
+			tmp.weights[i*tmp.oph + j] = net->weights[i*net->oph + j];
+		}
+	}
+	free(net->weights);
+	*net = tmp;
+	return 0;
+}
 /*
 double * network_output(network * net, size_t returnSize){
 	*returnSize = output_size;
@@ -88,7 +148,3 @@ double * network_output(network * net, size_t returnSize){
 }
 */
 
-/*
-int expand(netowrk * net, size_t neurons){
-}
-*/
