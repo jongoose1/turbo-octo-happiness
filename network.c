@@ -3,7 +3,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "network.h"
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433
+#endif
 
 network * new_network(size_t input_size, size_t output_size, size_t hidden_size){
 	network * net = malloc(sizeof(network));
@@ -27,6 +32,72 @@ network * new_network(size_t input_size, size_t output_size, size_t hidden_size)
 		return NULL;
 	}
 	return net;
+}
+
+mutation * new_mutation(size_t input_size, size_t oph){
+	mutation * mut = malloc(sizeof(mutation));
+	if(!mut) return NULL;
+	mut->input_size = input_size;
+	mut->oph = oph;
+	mut->input_weights = calloc(mut->input_size*mut->oph,sizeof(double));
+	mut->biases = calloc(mut->oph,sizeof(double));
+	mut->weights = calloc(mut->oph * mut->oph, sizeof(double));
+	if(!mut->input_weights || !mut->biases || !mut->weights){
+		free(mut->input_weights);
+		free(mut->biases);
+		free(mut->weights);
+		free(mut);
+		return NULL;
+	}
+	return mut;
+}
+
+mutation * new_mutation_for_network(network * net){
+	return new_mutation(net->input_size, net->oph);
+}
+
+int randomize(mutation * mut){
+	size_t i, j;
+	double magnitude = 0;
+	for(i = 0; i < mut->oph; i++){
+		mut->biases[i] = gauss();
+		magnitude = magnitude + mut->biases[i] * mut->biases[i];
+		for(j = 0; j < mut->input_size; j++){
+			mut->input_weights[i*mut->input_size + j] = gauss();
+			magnitude = magnitude + 
+			mut->input_weights[i*mut->input_size + j]*
+			mut->input_weights[i*mut->input_size + j];
+		}
+		for(j = 0; j < mut->oph; j++){
+			mut->weights[i*mut->oph + j] = gauss();
+			magnitude = magnitude +
+			mut->weights[i*mut->oph + j]*
+			mut->weights[i*mut->oph + j];
+		}
+	}
+	magnitude = sqrt(magnitude);
+
+	/* normalize */
+	scale(mut, 1.0 / magnitude);
+	return 0;
+}
+
+int scale(mutation * mut, double scalar){
+	size_t i, j;
+	for(i = 0; i < mut->oph; i++){
+		mut->biases[i] = mut->biases[i] * scalar;
+		for(j=0;j<mut->input_size;j++){
+			mut->input_weights[i*mut->input_size + j] =
+			mut->input_weights[i*mut->input_size + j] *
+			scalar;
+		}
+		for(j=0;j<mut->oph;j++){
+			mut->weights[i*mut->oph + j] =
+			mut->weights[i*mut->oph + j] *
+			scalar;
+		}
+	}
+	return 0;
 }
 
 int clear_input(network * net){
@@ -252,4 +323,94 @@ int expand_output(network * net, size_t n){
 	free(net->input_weights);
 	*net = tmp;
 	return 0;
+}
+
+int descend(network * net, double rate, mutation * nabla){
+	if(!compatible(net, nabla)) return 1;
+	size_t i, j;
+	for(i = 0; i < net->oph; i++){
+		net->biases[i] = net->biases[i] - rate * nabla->biases[i];
+		for(j = 0; j < net->input_size; j++){
+			net->input_weights[i*net->input_size + j] = net->input_weights[i*net->input_size + j] - rate * nabla->input_weights[i*net->input_size + j];
+		}
+		for(j = 0; j < net->oph; j++){
+			net->weights[i*net->oph + j] = net->weights[i*net->oph + j] - rate * nabla->weights[i*net->oph + j];
+		}
+	}
+	return 0;
+}
+
+int adjust(network * net, double delta){
+	/* dont know when i would ever use this */
+	size_t i, j;
+	for(i = 0; i < net->oph; i++){
+		net->biases[i] = net->biases[i] + delta;
+		for(j = 0; j < net->input_size; j++){
+			net->input_weights[i*net->input_size + j] = net->input_weights[i*net->input_size + j] + delta;
+		}
+		for(j = 0; j < net->oph; j++){
+			net->weights[i*net->oph + j] = net->weights[i*net->oph + j] + delta;
+		}
+	}
+	return 0;
+}
+
+int compatible(network * net, mutation * mut){
+	return mut->oph==net->oph && mut->input_size==net->input_size;
+}
+
+int mutate(network * net, mutation * mut){
+	if(!compatible(net, mut)) return 1;
+	size_t i, j;
+	for(i = 0; i < net->oph; i++){
+		net->biases[i] = net->biases[i] + mut->biases[i];
+		for(j = 0; j < net->input_size; j++){
+			net->input_weights[i*net->input_size + j] =
+			net->input_weights[i*net->input_size + j] +
+			mut->input_weights[i*mut->input_size + j];
+		}
+		for(j = 0; j < net->oph; j++){
+			net->weights[i*net->oph + j] =
+			net->weights[i*net->oph + j] +
+			mut->weights[i*mut->oph + j];
+		}
+	}
+	return 0;
+}
+
+
+double gauss(void){
+	double x,y;
+	x = (double) rand() / RAND_MAX;
+	y = (double) rand() / RAND_MAX;
+	return sqrt(-2 * log(x)) * cos( 2 * M_PI * y);
+}
+
+int invert(mutation * mut){
+	size_t i, j;
+	int r = 0;
+	for(i = 0; i < mut->oph; i++){
+		if (mut->biases[i] == 0){
+			r = 1;
+		} else {
+			mut->biases[i] = 1.0 / mut->biases[i];
+		}
+		for(j = 0; j < mut->input_size; j++){
+			if(mut->input_weights[i*mut->input_size + j] ==0) {
+				r = 1;
+			} else {
+				mut->input_weights[i*mut->input_size + j] = 1.0 /
+				mut->input_weights[i*mut->input_size + j];
+			}
+		}
+		for(j = 0; j < mut->oph; j++){
+			if(mut->weights[i*mut->oph + j] == 0){
+				r = 1;
+			} else {
+				mut->weights[i*mut->oph + j] = 1.0 /
+				mut->weights[i*mut->oph + j];
+			}
+		}
+	}
+	return r;
 }
