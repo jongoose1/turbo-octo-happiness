@@ -125,12 +125,51 @@ int scratch_tick(network * net, double * scratch){
 		}
 		for(j = 0; j < net->oph; j++){
 			scratch[i] = scratch[i] +
-			net->activations[i]*net->weights[i*net->oph + j];
+			net->activations[j]*net->weights[i*net->oph + j];
 		}
 		scratch[i] = tanh(scratch[i]);
 	}
 	for(i = 0; i < net->oph; i++){
 		net->activations[i] = scratch[i];
+	}
+	return 0;
+}
+
+int tick_output_z(network * net){
+	int r;
+	double * scratch = malloc(net->oph * sizeof(double));
+	r = scratch_tick_output_z(net, scratch);
+	free(scratch);
+	return r;
+}
+
+int scratch_tick_output_z(network * net, double * scratch){
+	if(!scratch) return 1;
+	size_t i, j;
+	for(i = 0; i < net->oph; i++) {
+		scratch[i] = net->biases[i];
+		for(j = 0; j < net->input_size; j++){
+			scratch[i] = scratch[i] +
+			net->inputs[j] * net->input_weights[i*net->input_size + j];
+		}
+		for(j = 0; j < net->oph; j++){
+			scratch[i] = scratch[i] +
+			net->activations[j]*net->weights[i*net->oph + j];
+		}
+	}
+	for(i = 0; i < net->output_size; i++){
+		net->activations[i] = scratch[i];
+	}
+	for(i = net->output_size; i < net->oph; i++){
+		net->activations[i] = tanh(scratch[i]);
+	}
+	return 0;
+}
+
+int tanh_output(network * net){
+	size_t i;
+	for(i = 0;i < net->output_size;i++){
+		net->activations[i] = tanh(net->activations[i]);
 	}
 	return 0;
 }

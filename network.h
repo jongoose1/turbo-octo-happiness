@@ -39,6 +39,12 @@ int tick(network * net);
 
 int scratch_tick(network * net, double * scratch);
 
+int scratch_tick_output_z(network * net, double * scratch);
+
+int tick_output_z(network * net);
+
+int tanh_output(network * net);
+
 int print_input(network * net);
 
 int print_output(network * net);

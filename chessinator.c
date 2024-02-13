@@ -6,11 +6,14 @@
 /* square choosing game player */
 
 /*
-once all outputs are constant, i cant give resonable feedback 
+outputs are interpreted before tanh, so can be more precise
+
+would learn much faster with automized feedback based on data rather than my
+guess about how well it played 
 */
 
 #define DELTA 0.1
-#define RATE 0.01
+#define RATE 0.1
 
 #define INP 9
 #define OUT 9
@@ -40,14 +43,16 @@ int play_game(network * net){
 			else net->inputs[j] = -1.0;
 		}
 		/* computers turn */
-		tick(net);
+		tick_output_z(net);
+		/* dont tanh output, so we can give nuanced feedback */
+		printf("Output z's: \n");
+		print_output(net);
 		k = 0;
 		for(j = 1;j < OUT; j++){
 			if (net->activations[j] > net->activations[k]) k = j;
 		}
-		printf("Output: \n");
-		print_output(net);
 		printf("Therefore, computer chooses square %ld\n", k);
+		tanh_output(net);
 	}
 	return 0;
 }
