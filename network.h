@@ -25,7 +25,11 @@ typedef struct mutation {
 
 network * new_network(size_t input_size, size_t output_size, size_t hidden_size);
 
+int delete_network(network * net);
+
 mutation * new_mutation(size_t input_size, size_t oph);
+
+int delete_mutation(mutation * mut);
 
 mutation * new_mutation_for_network(network * net);
 
@@ -57,6 +61,12 @@ int print_input_weights(network * net);
 
 int print_biases(network * net);
 
+int print_mut_biases(mutation * mut);
+
+int print_mut_weights(mutation * mut);
+
+int print_mut_input_weights(mutation * mut);
+
 int expand_hidden(network * net, size_t h);
 
 int expand_input(network * net, size_t n);
@@ -64,6 +74,10 @@ int expand_input(network * net, size_t n);
 int expand_output(network * net, size_t n);
 
 int descend(network * net, double rate, mutation * nabla);
+
+int nabla(mutation * mut, double dy);
+
+int newton_iteration(network * net, mutation * nab, double y);
 
 int adjust(network * net, double delta);
 

@@ -27,11 +27,21 @@ network * new_network(size_t input_size, size_t output_size, size_t hidden_size)
 		free(net->weights);
 		free(net->biases);
 		free(net->activations);
-		free(net);
 		free(net->inputs);
+		free(net);
 		return NULL;
 	}
 	return net;
+}
+
+int delete_network(network * net){
+	free(net->input_weights);
+	free(net->weights);
+	free(net->biases);
+	free(net->inputs);
+	free(net->activations);
+	free(net);
+	return 0;
 }
 
 mutation * new_mutation(size_t input_size, size_t oph){
@@ -50,6 +60,14 @@ mutation * new_mutation(size_t input_size, size_t oph){
 		return NULL;
 	}
 	return mut;
+}
+
+int delete_mutation(mutation * mut){
+	free(mut->input_weights);
+	free(mut->weights);
+	free(mut->biases);
+	free(mut);
+	return 0;
 }
 
 mutation * new_mutation_for_network(network * net){
@@ -83,6 +101,7 @@ int randomize(mutation * mut){
 }
 
 int scale(mutation * mut, double scalar){
+	if(scalar == 1.0) return 0;
 	size_t i, j;
 	for(i = 0; i < mut->oph; i++){
 		mut->biases[i] = mut->biases[i] * scalar;
@@ -199,6 +218,14 @@ int print_biases(network * net){
 	printf("\n");
 	return 0;
 }
+int print_mut_biases(mutation * mut){
+	size_t i;
+	for(i = 0; i < mut->oph; i++){
+		printf("%lf\n", mut->biases[i]);
+	}
+	printf("\n");
+	return 0;
+}
 
 int print_activations(network * net){
 	size_t i;
@@ -232,6 +259,29 @@ int print_input_weights(network * net){
 	printf("\n");
 	return 0;
 
+}
+int print_mut_weights(mutation * mut){
+	size_t i, j;
+	for(i = 0; i < mut->oph; i++){
+		for(j = 0; j < mut->oph; j++){
+			printf("%lf ", mut->weights[i*mut->oph + j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	return 0;
+}
+
+int print_mut_input_weights(mutation * mut){
+	size_t i, j;
+	for(i = 0; i < mut->oph; i++){
+		for(j = 0; j < mut->input_size; j++){
+			printf("%lf ", mut->input_weights[i*mut->input_size + j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	return 0;
 }
 
 int expand_hidden(network * net, size_t h){
@@ -378,6 +428,69 @@ int descend(network * net, double rate, mutation * nabla){
 	}
 	return 0;
 }
+
+int nabla(mutation * mut, double dy){
+	/* mut <- dy / mut */
+	if(invert(mut)) return 1;
+	scale(mut, dy);
+	return 0;
+}
+int clear_mut(mutation * mut){
+	size_t i, j;
+	for(i = 0; i < mut->oph; i++){
+		mut->biases[i] = 0;
+		for(j = 0; j < mut->input_size; j++){
+				mut->input_weights[i*mut->input_size + j] = 0;
+		}
+		for(j = 0; j < mut->oph; j++){
+				mut->weights[i*mut->oph + j] = 0;
+		}
+	}
+	return 0;
+}
+
+int newton_iteration(network * net, mutation * nabla, double y){
+	/* net <- net - y / nabla */
+	/* nabla <- net(old) - net(new)) */
+	/* (not new - old, mut points to prev network) */
+	if(y == 0){
+		clear_mut(nabla);
+		return 0;
+	}
+	if(!compatible(net, nabla)) return 1;
+	size_t i, j;
+	int r = 0;
+	double tmp;
+	for(i = 0; i < net->oph; i++){
+		tmp = net->biases[i];
+		if (nabla->biases[i] == 0){
+			r = 1;
+		} else {
+			net->biases[i] = net->biases[i] - y / nabla->biases[i];
+		}
+		nabla->biases[i] =  tmp - net->biases[i];
+		for(j = 0; j < net->input_size; j++){
+			tmp = net->input_weights[i*net->input_size + j];
+			if (nabla->input_weights[i*net->input_size + j] == 0){
+				r = 1;
+			} else {
+				net->input_weights[i*net->input_size + j] = net->input_weights[i*net->input_size + j] - y / nabla->input_weights[i*net->input_size + j];
+			}
+			nabla->input_weights[i*net->input_size + j] = tmp - net->input_weights[i*net->input_size + j];
+		}
+		for(j = 0; j < net->oph; j++){
+			tmp = net->weights[i*net->oph + j];
+			if(nabla->weights[i*net->oph + j] == 0){
+				r = 1;
+			} else {
+				net->weights[i*net->oph + j] = net->weights[i*net->oph + j] - y / nabla->weights[i*net->oph + j];
+			}
+			nabla->weights[i*net->oph + j] = tmp - net->weights[i*net->oph + j];
+		}
+	}
+	return r;
+}
+
 
 int adjust(network * net, double delta){
 	/* dont know when i would ever use this */
