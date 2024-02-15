@@ -6,7 +6,7 @@
 /* square choosing game player */
 
 /*
-outputs are interpreted before tanh, so can be more precise
+outputs are interpreted before tanh, so feedback can be more precise
 
 would learn much faster with automized feedback based on data rather than my
 guess about how well it played 
@@ -17,7 +17,7 @@ guess about how well it played
 
 #define INP 9
 #define OUT 9
-#define HID 1
+#define HID 10
 
 size_t player_input(void){
 	size_t r;
