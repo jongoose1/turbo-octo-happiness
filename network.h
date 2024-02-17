@@ -27,6 +27,10 @@ network * new_network(size_t input_size, size_t output_size, size_t hidden_size)
 
 int delete_network(network * net);
 
+int save_network(network * net, char * filename);
+
+network * load_network(char * filename);
+
 mutation * new_mutation(size_t input_size, size_t oph);
 
 int delete_mutation(mutation * mut);

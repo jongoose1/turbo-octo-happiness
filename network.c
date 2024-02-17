@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdint.h>
 #include "network.h"
 
 #ifndef M_PI
@@ -42,6 +43,55 @@ int delete_network(network * net){
 	free(net->activations);
 	free(net);
 	return 0;
+}
+
+int save_network(network * net, char * filename){
+	if(!net || !filename) return 1;
+	FILE * f = fopen(filename, "wb");
+	if(!f) return 1;
+	uint32_t x = 0x6E657420; /* "net " */
+	fwrite(&x, 4, 1, f);
+	if(fwrite(&net->input_size, sizeof(size_t), 1, f) != 1) return 1;
+	if(fwrite(&net->output_size, sizeof(size_t), 1, f) != 1) return 1;
+	if(fwrite(&net->hidden_size, sizeof(size_t), 1, f) != 1) return 1;
+	if(fwrite(&net->oph, sizeof(size_t), 1, f) != 1) return 1;
+	if(fwrite(net->biases, sizeof(double), net->oph, f) != net->oph) return 1;
+	if(fwrite(net->weights, sizeof(double), net->oph * net->oph, f) != net->oph*net->oph) return 1;
+	if(fwrite(net->input_weights, sizeof(double), net->oph* net->input_size, f) != net->oph*net->input_size) return 1;
+	if(fwrite(net->activations, sizeof(double), net->oph, f) != net->oph) return 1;
+	if(fwrite(net->inputs, sizeof(double), net->input_size, f) != net->input_size) return 1;
+	fclose(f);
+	return 0;
+
+}
+
+network * load_network(char * filename){
+	if(!filename) return NULL;
+	FILE * f = fopen(filename, "r");
+	if(!f) return NULL;
+	uint32_t x;
+	size_t inp, out, hid, oph;
+	if(fread(&x, 4, 1,f) != 1 || 
+	x != 0x6E657420 || /* "net " */
+	fread(&inp, sizeof(size_t), 1, f) != 1 ||
+	fread(&out, sizeof(size_t), 1, f) != 1 ||
+	fread(&hid, sizeof(size_t), 1, f) != 1 ||
+	fread(&oph, sizeof(size_t), 1, f) != 1 ||
+	oph != out + hid){
+		fclose(f);
+		return NULL;
+	}
+	network * net = new_network(inp,out,hid);
+	if(!net ||
+	fread(net->biases, sizeof(double), net->oph, f) != net->oph ||
+	fread(net->weights, sizeof(double), net->oph * net->oph, f) != net->oph * net->oph ||
+	fread(net->input_weights, sizeof(double), net->oph * net->input_size, f) != net->oph * net->input_size ||
+	fread(net->activations, sizeof(double), net->oph, f) != net->oph ||
+	fread(net->inputs, sizeof(double), net->input_size, f) != net->input_size
+	) { fclose(f); return NULL; }
+	
+	fclose(f);
+	return net;
 }
 
 mutation * new_mutation(size_t input_size, size_t oph){
