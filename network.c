@@ -45,6 +45,30 @@ int delete_network(network * net){
 	return 0;
 }
 
+network * copy_network(network * src){
+	if(!src) return NULL;
+	network * dst = new_network(src->input_size, src->output_size, src->hidden_size);
+	if(!dst) return NULL;
+	size_t i, j;
+	for(i = 0; i < dst->oph; i++) {
+		dst->biases[i] = src->biases[i];
+		dst->activations[i] = src->activations[i];
+		for(j = 0; j < dst->input_size; j++){
+			dst->input_weights[i*dst->input_size + j] = 
+			src->input_weights[i*src->input_size + j];
+		}
+		for(j = 0; j < dst->oph; j++){
+			dst->weights[i*dst->oph + j] =
+			src->weights[i*src->oph + j];
+		}
+	}
+	for(i = 0; i < dst->input_size; i++){
+		dst->inputs[i] = src->inputs[i];
+	}
+
+	return dst;
+}
+
 int save_network(network * net, char * filename){
 	if(!net || !filename) return 1;
 	FILE * f = fopen(filename, "wb");

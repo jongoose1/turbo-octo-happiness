@@ -5,6 +5,14 @@
 #define N 10
 #define S 100
 
+/*
+	1. define a set of behaviors, each with an equal number of shares
+	2. choose a behavior randomly, with each behavior having probability proportional to its number of shares
+	3. observe the positive or negative consequence (reinforcement or punishment)
+	4. increase (or decrease) the number of shares of the chosen behavior proportionally to the consequence's severity, except, the number of shares cannot be decreased to zero
+	5. goto 2
+*/
+
 int choose_behavior(int * B, int n, int total){
 	if (total <= 0){
 		int i;
@@ -27,6 +35,7 @@ void adjust(int * B, int index, int consequence, int * total_p){
 }
 
 int main(void){
+	/* 1. define behaviors */
 	int B[N];
 	int i;
 	for (i = 0;i<N;i++) B[i] = S;
@@ -37,7 +46,7 @@ int main(void){
 		printf("Press any key to continue");
 		getchar();
 		
-		/*1. choose behavior*/
+		/* 2. choose behavior */
 		int random_share = rand() % total;
 		int cumulative_shares = 0, index = -1;
 		while (cumulative_shares <= random_share)
@@ -46,12 +55,12 @@ int main(void){
 		printf("Random share chosen: %d\n", random_share);
 		printf("Corresponding bahavior: %d\n", index);
 
-		/*2. observe consequence*/
+		/*3. observe consequence*/
 		int consequence = rand() % (S/10) - (S/10);
 
 		printf("Consequence: %d\n", consequence);
 
-		/*3. adjust probabilities*/
+		/*4. adjust probabilities*/
 		int initial = B[index];
 		B[index] = B[index] + consequence;
 		if(B[index] <= 0) B[index] = 1;

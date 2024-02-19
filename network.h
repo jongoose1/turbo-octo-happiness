@@ -27,6 +27,8 @@ network * new_network(size_t input_size, size_t output_size, size_t hidden_size)
 
 int delete_network(network * net);
 
+network * copy_network(network * src);
+
 int save_network(network * net, char * filename);
 
 network * load_network(char * filename);

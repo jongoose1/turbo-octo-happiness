@@ -1,6 +1,7 @@
 OUTS := opco inator network_test gaussinator expansion_test chessinator \
-nandinator newtoninator newtons_nandinator chessinator2 netio_test
-DEPS := network neuron
+nandinator newtoninator newtons_nandinator chessinator2 netio_test \
+chessinator3 tac
+PS := network neuron
 CC := gcc
 CFLAGS := -O3 -flto -ansi -Wall
 LDFLAGS := -O3 -Wall -flto
@@ -18,8 +19,10 @@ netio_test.x: network.o
 expansion_test.x: network.o
 chessinator.x: network.o
 chessinator2.x: network.o
+chessinator3.x: network.o
 nandinator.x: network.o
 newtons_nandinator.x: network.o
+memtest.x: network.o
 
 $(addsuffix .x, $(OUTS)): %.x: %.o
 
