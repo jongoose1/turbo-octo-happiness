@@ -28,11 +28,11 @@ keep inputing current state to give thinking time
 
 */
 
-#define DELTA 0.01
+#define DELTA 1
 #define HID 50
 #define N 100
-#define ROUNDS 10000
-#define GENERATIONS 10
+#define ROUNDS 100
+#define GENERATIONS 10000
 #define THINK_TICKS 3
 
 int flip_board(double * state){
@@ -179,7 +179,6 @@ size_t select(size_t * shares, size_t n){
 	size_t i, total = 0, random_share, cumulative_shares = 0, index = 0;
 	for(i = 0; i < n; i++) total = total + shares[i];
 	random_share = rand() % total;
-	printf("Share #%ld chosen\n", random_share);
 	while(cumulative_shares <= random_share)
 		cumulative_shares = cumulative_shares + shares[index++];
 	return index - 1; 
@@ -208,6 +207,7 @@ int main(void){
 		return 1;
 	}
 	do {
+
 		avg = 0;
 		/* 1. compete for shares */
 		for(i = 0; i < N; i++) shares[i] = 1;
@@ -229,7 +229,18 @@ int main(void){
 					break;
 			}
 		}
+		/* print distance matrix */
+		/*
+		size_t j;
+		printf("Distances:\n");
+		for(i = 0; i < N; i++){
+			for(j = 0; j < N; j++){
+				printf("%lf ", distance(nets[i], nets[j]));
+			}
+			printf("\n");
 
+		}
+		*/
 		/* 2. selection */
 		for(i = 0; i < N; i++){
 			printf("Shares[%ld] = %ld\n", i, shares[i]);
@@ -238,7 +249,7 @@ int main(void){
 		for(i = 0; i < N; i++){
 			selection = select(shares, N);
 			printf("Network %ld has been selected\n", selection);
-			scratch[i] = copy_network(nets[i]);
+			scratch[i] = copy_network(nets[selection]);
 			if(!scratch[i]){
 				printf("Failed to copy networks\n");
 				return 1;
@@ -262,7 +273,6 @@ int main(void){
 	} while (c == 'c');
 	for(i = 0; i < N; i++){
 		delete_network(nets[i]);
-		delete_network(scratch[i]);
 	}
 	return 0;
 }

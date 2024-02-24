@@ -95,4 +95,14 @@ double gauss(void);
 
 int invert(mutation * mut);
 
+double mut_length(mutation * mut);
+
+int net_compatible(network * net1, network * net2);
+
+mutation * diff(network * net1, network * net2);
+
+double distance(network * net1, network * net2);
+
+int redesignate_oph(network * net, size_t new_output_size);
+
 #endif

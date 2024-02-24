@@ -582,6 +582,7 @@ int adjust(network * net, double delta){
 }
 
 int compatible(network * net, mutation * mut){
+	if(!net || !mut) return 0;
 	return mut->oph==net->oph && mut->input_size==net->input_size;
 }
 
@@ -639,4 +640,86 @@ int invert(mutation * mut){
 		}
 	}
 	return r;
+}
+
+double mut_length(mutation * mut){
+	if(!mut) return -1.0;
+	size_t i, j;
+	double r = 0;
+	for(i = 0; i < mut->oph; i++){
+		r = r + pow(mut->biases[i], 2);
+		for(j = 0; j < mut->input_size; j++){
+				r = r + pow(mut->input_weights[i*mut->input_size + j], 2.0);
+		}
+		for(j = 0; j < mut->oph; j++){
+				r = r + pow(mut->weights[i*mut->oph + j], 2.0);
+		}
+	}
+	return sqrt(r);
+}
+
+int net_compatible(network * net1, network * net2){
+	if(!net1 || !net2) return 0;
+	return net1->oph==net2->oph && net1->input_size==net2->input_size;
+}
+
+mutation * diff(network * net1, network * net2){
+	/* mut <- net2 - net1 */
+	if(!net1 || !net2) return NULL;
+	if(!net_compatible(net1, net2)) return NULL;
+	mutation * mut = new_mutation_for_network(net1);
+	if(!mut) return NULL;
+	size_t i, j;
+	for(i = 0; i < mut->oph; i++){
+		mut->biases[i] = net2->biases[i] - net1->biases[i];
+		for(j = 0; j < mut->input_size; j++){
+				mut->input_weights[i*mut->input_size + j] =
+				net2->input_weights[i*net1->input_size + j] -
+				net1->input_weights[i*net2->input_size + j];
+		}
+		for(j = 0; j < mut->oph; j++){
+				mut->weights[i*mut->oph + j] =
+				net2->weights[i*net1->oph + j] -
+				net1->input_weights[i*net2->oph + j];
+		}
+	}
+	return mut;
+
+}
+
+double distance(network * net1, network * net2){
+	if(net1 == net2) return 0.0;
+	if (!net_compatible(net1, net2)) return -1.0;
+	double r = 0;
+	size_t i, j;
+	for(i = 0; i < net1->oph; i++){
+		r = r + pow(net1->biases[i] - net2->biases[i], 2.0);
+		for(j = 0; j < net1->input_size; j++){
+			r = r + pow(
+			net1->input_weights[i*net1->input_size + j] -
+			net2->input_weights[i*net2->input_size + j], 2.0);
+		}
+		for(j = 0;j < net1->oph; j++){
+			r = r + pow(
+			net1->weights[i*net1->oph + j] -
+			net2->weights[i*net2->oph + j], 2.0);
+		}
+	}
+	return sqrt(r);
+}
+
+/*
+int merge(network * net1, network * net2){
+	i1+i2, o1+o2, h1+h2
+	new connections set to 0
+}
+network * concat(network * net1, network * net2){
+	net1 feeds into net2
+}
+*/
+int redesignate_oph(network * net, size_t new_output_size){
+	if (new_output_size > net->oph) return 1;
+	net->output_size = new_output_size;
+	net->hidden_size = net->oph - new_output_size;
+	return 0;
 }
