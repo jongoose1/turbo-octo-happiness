@@ -28,13 +28,12 @@ keep inputing current state to give thinking time
 
 */
 
-#define DELTA 1
-#define HID 50
-#define N 100
-#define ROUNDS 100
-#define GENERATIONS 10000
-#define THINK_TICKS 3
-
+#define DELTA 10
+#define HID 5
+#define N 1000
+#define ROUNDS 10000
+#define GENERATIONS 100
+#define THINK_TICKS 2
 int flip_board(double * state){
 	size_t i;
 	for(i = 0; i<9; i++) state[i] = -1 * state[i];
@@ -243,12 +242,12 @@ int main(void){
 		*/
 		/* 2. selection */
 		for(i = 0; i < N; i++){
-			printf("Shares[%ld] = %ld\n", i, shares[i]);
+			/*printf("Shares[%ld] = %ld\n", i, shares[i]);*/
 		}
 		printf("\n");
 		for(i = 0; i < N; i++){
 			selection = select(shares, N);
-			printf("Network %ld has been selected\n", selection);
+			/*printf("Network %ld has been selected\n", selection);*/
 			scratch[i] = copy_network(nets[selection]);
 			if(!scratch[i]){
 				printf("Failed to copy networks\n");
@@ -271,7 +270,10 @@ int main(void){
 		}
 		gen++;
 	} while (c == 'c');
+	/*here*/
+	size_t max_index = 0;
 	for(i = 0; i < N; i++){
+		if (shares[i] > shares[max_index]) max_index = i;
 		delete_network(nets[i]);
 	}
 	return 0;
