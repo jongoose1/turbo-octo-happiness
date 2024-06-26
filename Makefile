@@ -1,6 +1,6 @@
 OUTS := opco inator network_test gaussinator expansion_test chessinator \
 nandinator newtoninator newtons_nandinator chessinator2 netio_test \
-chessinator3 tac distance_test
+chessinator3 tac distance_test choose
 DEPS := network neuron
 CC := gcc
 CFLAGS := -O3 -flto -ansi -Wall
